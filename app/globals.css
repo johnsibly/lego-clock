@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --stud-size: clamp(20px, 4vw, 50px);
 }
 
 @theme inline {
@@ -12,15 +13,49 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.lego-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  padding: 20px;
+}
+
+.lego-clock {
+  display: flex;
+  gap: 0;
+  padding: calc(var(--stud-size) * 0.75);
+  background: #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 
+    inset 4px 4px 8px #2d2d2d,
+    inset -4px -4px 8px #0a0a0a,
+    0 8px 32px rgba(0,0,0,0.8);
+}
+
+.lego-character {
+  display: flex;
+  flex-direction: column;
+}
+
+.lego-row {
+  display: flex;
+}
+
+.lego-stud {
+  transition: background-color 0.3s ease;
 }

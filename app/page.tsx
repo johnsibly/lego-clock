@@ -1,65 +1,302 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+
+// Digit patterns: 6 columns x 12 rows (full-width), colon 2 columns x 12 rows
+const DIGIT_PATTERNS: Record<string, number[][]> = {
+  "0": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "1": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 1, 0, 0],
+    [1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "2": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 1, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "3": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "4": [
+    [0, 0, 0, 0, 0, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "5": [
+    [0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "6": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "7": [
+    [0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 1, 1, 0],
+    [0, 0, 0, 1, 1, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "8": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  "9": [
+    [0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 0],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1],
+    [0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0],
+  ],
+  ":": [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [1, 1],
+    [1, 1],
+    [0, 0],
+    [0, 0],
+    [1, 1],
+    [1, 1],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ],
+  "spacer": [
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+    [0],
+  ],
+};
+
+// Single LEGO stud component
+function LegoStud({ isActive }: { isActive: boolean }) {
+  const baseColor = isActive ? "#c4281c" : "#1a1a1a";
+  const highlightColor = isActive ? "#e8503a" : "#2d2d2d";
+  const shadowColor = isActive ? "#8b1c14" : "#0a0a0a";
+  const studTopColor = isActive ? "#d63a2e" : "#222222";
+  const logoColor = isActive ? "#a82218" : "#151515";
+
+  return (
+    <div
+      className="lego-stud"
+      style={{
+        width: "var(--stud-size)",
+        height: "var(--stud-size)",
+        backgroundColor: baseColor,
+        position: "relative",
+        boxShadow: `
+          inset 2px 2px 0 ${highlightColor},
+          inset -2px -2px 0 ${shadowColor}
+        `,
+      }}
+    >
+      {/* The circular stud on top */}
+      <div
+        className="stud-circle"
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "65%",
+          height: "65%",
+          borderRadius: "50%",
+          backgroundColor: studTopColor,
+          boxShadow: `
+            inset 2px 2px 4px ${highlightColor},
+            inset -2px -2px 4px ${shadowColor},
+            0 2px 4px rgba(0,0,0,0.5)
+          `,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {/* LEGO logo text */}
+        <span
+          style={{
+            fontSize: "calc(var(--stud-size) * 0.12)",
+            fontWeight: "900",
+            fontFamily: "Arial Black, Arial, sans-serif",
+            color: logoColor,
+            letterSpacing: "-0.3px",
+            textShadow: `0 0.5px 0 ${highlightColor}`,
+            userSelect: "none",
+          }}
+        >
+          LEGO
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Render a single digit or colon
+function LegoCharacter({ char }: { char: string }) {
+  const pattern = DIGIT_PATTERNS[char];
+  if (!pattern) return null;
+
+  return (
+    <div className="lego-character">
+      {pattern.map((row, rowIndex) => (
+        <div key={rowIndex} className="lego-row">
+          {row.map((cell, colIndex) => (
+            <LegoStud key={colIndex} isActive={cell === 1} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Main clock component
+function LegoClock() {
+  const [time, setTime] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const seconds = now.getSeconds().toString().padStart(2, "0");
+      setTime(`${hours}:${minutes}:${seconds}`);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!time) return null;
+
+  // Build display with spacers between all characters
+  const displayChars: string[] = [];
+  time.split("").forEach((char, index) => {
+    if (index > 0) {
+      displayChars.push("spacer");
+    }
+    displayChars.push(char);
+  });
+
+  return (
+    <div className="lego-clock">
+      {displayChars.map((char, index) => (
+        <LegoCharacter key={index} char={char} />
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="lego-container">
+      <LegoClock />
     </div>
   );
 }
