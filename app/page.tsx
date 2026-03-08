@@ -258,6 +258,7 @@ function LegoCharacter({ char }: { char: string }) {
 // Main clock component
 function LegoClock() {
   const [time, setTime] = useState<string>("");
+  const [studSize, setStudSize] = useState<number | null>(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -273,7 +274,23 @@ function LegoClock() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!time) return null;
+  useEffect(() => {
+    const calculateStudSize = () => {
+      // Total bricks: 6 digits (6 wide each) + 2 colons (2 wide each) + 7 spacers (1 wide each)
+      // = 36 + 4 + 7 = 47 bricks
+      // Plus padding: 0.75 * 2 = 1.5 stud-sizes, plus container padding (40px)
+      const totalBricks = 47;
+      const paddingBricks = 1.5;
+      const containerPadding = 40; // 20px on each side
+      const availableWidth = window.innerWidth - containerPadding;
+      const size = availableWidth / (totalBricks + paddingBricks);
+      setStudSize(size);
+    };
+
+    calculateStudSize();
+  }, []);
+
+  if (!time || studSize === null) return null;
 
   // Build display with spacers between all characters
   const displayChars: string[] = [];
@@ -285,7 +302,7 @@ function LegoClock() {
   });
 
   return (
-    <div className="lego-clock">
+    <div className="lego-clock" style={{ "--stud-size": `${studSize}px` } as React.CSSProperties}>
       {displayChars.map((char, index) => (
         <LegoCharacter key={index} char={char} />
       ))}
