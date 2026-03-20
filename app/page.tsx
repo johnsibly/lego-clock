@@ -57,7 +57,7 @@ const DIGIT_PATTERNS: Record<string, number[][]> = {
     [0, 0, 0, 0, 1, 1],
     [0, 0, 0, 0, 1, 1],
     [1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1],,
+    [1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0],
   ],
   "4": [
@@ -295,12 +295,10 @@ function LegoClock() {
   // Build display with spacers between all characters
   const displayChars: string[] = [];
   time.split("").forEach((char, index) => {
-    if (char!=' ') {
-      if (index > 0) {
-        displayChars.push("spacer");
-      }
-      displayChars.push(char);
+    if (index > 0) {
+      displayChars.push("spacer");
     }
+    displayChars.push(char);
   });
 
   return (
