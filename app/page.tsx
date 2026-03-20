@@ -295,10 +295,12 @@ function LegoClock() {
   // Build display with spacers between all characters
   const displayChars: string[] = [];
   time.split("").forEach((char, index) => {
-    if (index > 0) {
-      displayChars.push("spacer");
+    if (char!=' ') {
+      if (index > 0) {
+        displayChars.push("spacer");
+      }
+      displayChars.push(char);
     }
-    displayChars.push(char);
   });
 
   return (
