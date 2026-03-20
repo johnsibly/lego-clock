@@ -266,7 +266,7 @@ function LegoClock() {
       const hours = now.getHours().toString().padStart(2, "0");
       const minutes = now.getMinutes().toString().padStart(2, "0");
       const seconds = now.getSeconds().toString().padStart(2, "0");
-      setTime(`${hours}:${minutes}:${seconds}`);
+      setTime(` ${hours}:${minutes}:${seconds} `);
     };
 
     updateTime();
